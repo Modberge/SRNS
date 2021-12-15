@@ -1,0 +1,5 @@
+SRNS_real/__pycache__/*
+SRNS_syn/__pycache__/*
+SRNS_real/Log/*
+SRNS_syn/Log/*
+Log/*

@@ -1,0 +1,48 @@
+{
+    // 使用 IntelliSense 了解相关属性。 
+    // 悬停以查看现有属性的描述。
+    // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "SRNS",
+            "type": "python",
+            "request": "launch",
+            "program": "./SRNS_real/SRNS_main.py",
+            "console": "integratedTerminal",
+            "env": {
+                "CUDA_VISIBLE_DEVICES":"1",
+            },
+            "args":[
+                "--process",
+                "SRNS-Final",
+                "--S1",
+                "8",
+                "--lr",
+                "0.001",
+                "--regs",
+                "0.01",
+                "--alpha",
+                "5.0",
+                "--warmup",
+                "50",
+                "--embedding_size",
+                "32",
+                "--S2_div_S1",
+                "8",
+                "--temperature",
+                "10.0",
+                "--gpu",
+                "1",
+                "--trial_id",
+                "0",
+                "--early_stop",
+                "100",
+                "--epoch",
+                "400",
+                "--debug",
+            ]
+
+        }
+    ]
+}

@@ -35,7 +35,8 @@ class MODEL():
             self.embeddingmap_item = tf.Variable(
                     tf.truncated_normal(shape=[self.num_item, self.embedding_size], mean=0.0, stddev=0.01),
                                         name='embedding_item', dtype=tf.float32)
-            self.h = tf.Variable(tf.random_uniform([self.embedding_size, 1], minval=-tf.sqrt(6 / (self.embedding_size + 1)),maxval=tf.sqrt(6 / (self.embedding_size + 1))), name='h')
+            self.h = tf.Variable(tf.random_uniform([self.embedding_size, 1], \
+                minval=-tf.sqrt(6 / (self.embedding_size + 1)),maxval=tf.sqrt(6 / (self.embedding_size + 1))), name='h')
         
         else:
             param=pickle.load(open('./model/model_%s.pkl'%(self.model_file),'rb'))
@@ -60,7 +61,8 @@ class MODEL():
 
         self.regularizer = tf.contrib.layers.l2_regularizer(self.regs)
         if self.regs!=0.0:
-            self.loss_reg = self.regularizer(embedding_user)+self.regularizer(embedding_item_pos)+self.regularizer(embedding_item_neg)
+            self.loss_reg = self.regularizer(embedding_user)+\
+                self.regularizer(embedding_item_pos)+self.regularizer(embedding_item_neg)
         else:
             self.loss_reg = 0
 

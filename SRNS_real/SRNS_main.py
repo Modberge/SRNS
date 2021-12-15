@@ -16,6 +16,7 @@ from multiprocessing import Pool
 import setproctitle
 import pickle
 
+import tensorflow as tf
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
@@ -64,6 +65,7 @@ def parse_args():
                         help='model file path')
     parser.add_argument('--S2_div_S1', type=int, default=1,
                         help='cache size of cache than cache1')
+    parser.add_argument("--debug", action="store_true")
     return parser.parse_args()
 
 
@@ -118,8 +120,10 @@ def training(model, args, train_data, val_data, test_data, test_data_neg, num_us
             Mu_idx.append(Mu_idx_tmp)
 
         Recall, NDCG = EvalUser.eval(model, sess, val_data, test_data_neg)
-        print("Before trianing, val data, Recall = %.4f/%.4f, NDCG = %.4f/%.4f" % (Recall[0], Recall[1], NDCG[0], NDCG[1]))
-        logging.info("Before trianing, val data, Recall = %.4f/%.4f, NDCG = %.4f/%.4f" % (Recall[0], Recall[1], NDCG[0], NDCG[1]))
+        print("Before trianing, val data, Recall = %.4f/%.4f, \
+             NDCG = %.4f/%.4f" % (Recall[0], Recall[1], NDCG[0], NDCG[1]))
+        logging.info("Before trianing, val data, Recall = %.4f/%.4f, \
+            NDCG = %.4f/%.4f" % (Recall[0], Recall[1], NDCG[0], NDCG[1]))
 
         score_cand_cur = np.array(
             [EvalUser.predict_fast(model, sess, num_user, num_item, parallel_users=100, predict_data=candidate_cur)])
@@ -194,8 +198,10 @@ def training(model, args, train_data, val_data, test_data, test_data_neg, num_us
         sess.run(tf.assign(model.embeddingmap_item, Model_byR1_param[1]))
         sess.run(tf.assign(model.h, Model_byR1_param[2]))
         Recall, NDCG = EvalUser.eval(model, sess, test_data, test_data_neg)
-        print("Test data via Model_byR1_param: Recall = %.4f/%.4f, NDCG = %.4f/%.4f" % (Recall[0], Recall[1], NDCG[0], NDCG[1]))
-        logging.info("Test data via Model_byR1_param: Recall = %.4f/%.4f, NDCG = %.4f/%.4f" % (Recall[0], Recall[1], NDCG[0], NDCG[1]))
+        print("Test data via Model_byR1_param: Recall = %.4f/%.4f, \
+            NDCG = %.4f/%.4f" % (Recall[0], Recall[1], NDCG[0], NDCG[1]))
+        logging.info("Test data via Model_byR1_param: Recall = %.4f/%.4f, \
+            NDCG = %.4f/%.4f" % (Recall[0], Recall[1], NDCG[0], NDCG[1]))
 
         return Metric_best
 
@@ -340,15 +346,19 @@ def init_logging_and_result(args):
         F_alpha, F_Mu_size, args.S2_div_S1, F_trail_id)
     if args.use_pretrain:
         filename += "_use_pretrain"
-    if not os.path.exists(Log_dir_name + '/' + filename):
-        logging.basicConfig(filename=Log_dir_name + '/' + filename, level=logging.INFO)
+    """if not os.path.exists(Log_dir_name + '/' + filename):
     else:
         print(Log_dir_name + '/' + filename, 'already exists, skipping ...')
         exit(0)
+    """
+    logging.basicConfig(filename=Log_dir_name + '/' + filename, level=logging.INFO)
 
 
 def run():
     args = parse_args()
+    if args.debug:
+        tf.enable_eager_execution()
+
     if args.fix_seed:
         random.seed(1)
         np.random.seed(1)
@@ -357,10 +367,16 @@ def run():
     os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
     setproctitle.setproctitle(args.process_name)
 
-    train_data = pickle.load(open('./ml1m/train.pkl', 'rb'))
-    val_data = pickle.load(open('./ml1m/val.pkl', 'rb'))
-    test_data = pickle.load(open('./ml1m/test.pkl', 'rb'))
-    test_data_neg = pickle.load(open('./ml1m/test_neg.pkl', 'rb'))
+    if args.debug:
+        train_data = pickle.load(open('./SRNS_real/ml1m/train.pkl', 'rb'))
+        val_data = pickle.load(open('./SRNS_real/ml1m/val.pkl', 'rb'))
+        test_data = pickle.load(open('./SRNS_real/ml1m/test.pkl', 'rb'))
+        test_data_neg = pickle.load(open('./SRNS_real/ml1m/test_neg.pkl', 'rb'))
+    else:
+        train_data = pickle.load(open('./ml1m/train.pkl', 'rb'))
+        val_data = pickle.load(open('./ml1m/val.pkl', 'rb'))
+        test_data = pickle.load(open('./ml1m/test.pkl', 'rb'))
+        test_data_neg = pickle.load(open('./ml1m/test_neg.pkl', 'rb'))
 
     num_user = max(np.max(train_data[:, 0]), np.max(test_data[:, 0])) + 1
     num_item = max(np.max(train_data[:, 1]), np.max(test_data[:, 1])) + 1
